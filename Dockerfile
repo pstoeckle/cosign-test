@@ -1,7 +1,3 @@
-# SPDX-FileCopyrightText: 2024 Siemens AG, Patrick Stoeckle, and other contributors.
-#
-# SPDX-License-Identifier: LicenseRef-Siemens-ISL-1.5
-
 FROM golang:1.22.0-bookworm as build-env
 
 WORKDIR /app
