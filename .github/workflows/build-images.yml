@@ -30,16 +30,17 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Docker meta
+      - name: Get Metadata for Docker
         id: docker_meta
         uses: docker/metadata-action@v4.4.0
         with:
           images: ghcr.io/${{ github.repository_owner }}/test-image
-          tags: type=sha,format=long
-
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,format=short
       - name: Build and Push container images
         uses: docker/build-push-action@v4.0.0
-        id: build-and-push
+        id: build_and_push
         with:
           platforms: linux/amd64,linux/arm64
           push: true
@@ -57,4 +58,4 @@ jobs:
           TAGS: ${{ steps.docker_meta.outputs.tags }}
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+          DIGEST: ${{ steps.build_and_push.outputs.digest }}
