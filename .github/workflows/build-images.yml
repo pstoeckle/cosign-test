@@ -19,10 +19,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+      # Install and Setup
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.4.0
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2.1.0
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2.5.0
+      # Login and Metadata
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -37,6 +41,7 @@ jobs:
           tags: |
             type=semver,pattern={{raw}}
             type=sha,format=short
+      # Build
       - name: Build and Push container images
         uses: docker/build-push-action@v4.0.0
         id: build_and_push
@@ -44,8 +49,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
-      - uses: sigstore/cosign-installer@v3.4.0
-        name: Install cosign
+      # Sign with cosign
       - name: Sign image with a key
         run: |
           images=""
@@ -58,3 +62,13 @@ jobs:
           COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
           DIGEST: ${{ steps.build_and_push.outputs.digest }}
+      - name: Sign the images with GitHub OIDC Token
+        env:
+          DIGEST: ${{ steps.build_and_push.outputs.digest }}
+          TAGS: ${{ steps.docker_meta.outputs.tags }}
+        run: |
+          images=""
+          for tag in ${TAGS}; do
+            images+="${tag}@${DIGEST} "
+          done
+          cosign sign --yes ${images}
