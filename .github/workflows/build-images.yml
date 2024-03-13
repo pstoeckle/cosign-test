@@ -80,11 +80,11 @@ jobs:
           for tag in ${TAGS}; do
             images+="${tag}@${DIGEST} "
           done
-          cosign verify --yes --key env://COSIGN_PUBLIC_KEY ${images}
+          cosign verify --key env://COSIGN_PUBLIC_KEY ${images}
       - name: Verify the signatures with the public key in the repository
         run: |
           images=""
           for tag in ${TAGS}; do
             images+="${tag}@${DIGEST} "
           done
-          cosign verify --yes --key cosign.pub ${images}
+          cosign verify --key cosign.pub ${images}
