@@ -81,6 +81,9 @@ jobs:
             images+="${tag}@${DIGEST} "
           done
           cosign verify --key env://COSIGN_PUBLIC_KEY ${images}
+        env:
+          DIGEST: ${{ steps.build_and_push.outputs.digest }}
+          TAGS: ${{ steps.docker_meta.outputs.tags }}
       - name: Verify the signatures with the public key in the repository
         run: |
           images=""
@@ -88,3 +91,6 @@ jobs:
             images+="${tag}@${DIGEST} "
           done
           cosign verify --key cosign.pub ${images}
+        env:
+          DIGEST: ${{ steps.build_and_push.outputs.digest }}
+          TAGS: ${{ steps.docker_meta.outputs.tags }}
